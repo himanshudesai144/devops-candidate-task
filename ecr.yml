@@ -1,0 +1,12 @@
+AWSTemplateFormatVersion: "2010-09-09"
+ Description: ECR repo test WM Node Test
+ Resources:
+   AWSTrainingTestRepo:
+     Type: AWS::ECR::Repository
+     Properties:
+       RepositoryName: "test"
+ Outputs:
+   AWSTrainingTestArn:
+     Value: !GetAtt AWSTrainingTestRepo.Arn
+     Export:
+       Name: AWSTrainingTestArn
