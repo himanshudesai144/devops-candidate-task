@@ -1,0 +1,242 @@
+
+[Container] 2022/03/28 21:54:00 Waiting for agent ping
+[Container] 2022/03/28 21:54:01 Waiting for DOWNLOAD_SOURCE
+[Container] 2022/03/28 21:54:01 Phase is DOWNLOAD_SOURCE
+[Container] 2022/03/28 21:54:01 CODEBUILD_SRC_DIR=/codebuild/output/src141267206/src/github.com/himanshudesai144
+/devops-candidate-task
+[Container] 2022/03/28 21:54:01 YAML location is /codebuild/output/src141267206/src/github.com/himanshudesai144
+/devops-candidate-task/buildspec.yml
+[Container] 2022/03/28 21:54:01 Setting HTTP client timeout to higher timeout for Github source
+[Container] 2022/03/28 21:54:01 Processing environment variables
+[Container] 2022/03/28 21:54:02 No runtime version selected in buildspec.
+[Container] 2022/03/28 21:54:03 Moving to directory /codebuild/output/src141267206/src/github.com/himanshudesai144
+/devops-candidate-task
+[Container] 2022/03/28 21:54:04 Configuring ssm agent with target id: codebuild:2bde36f2-6724-4f01-9972-4d7adfebe267
+[Container] 2022/03/28 21:54:04 Successfully updated ssm agent configuration
+[Container] 2022/03/28 21:54:04 Registering with agent
+[Container] 2022/03/28 21:54:04 Phases found in YAML: 3
+[Container] 2022/03/28 21:54:04  PRE_BUILD: 6 commands
+[Container] 2022/03/28 21:54:04  BUILD: 4 commands
+[Container] 2022/03/28 21:54:04  POST_BUILD: 7 commands
+[Container] 2022/03/28 21:54:04 Phase complete: DOWNLOAD_SOURCE State: SUCCEEDED
+[Container] 2022/03/28 21:54:04 Phase context status code:  Message: 
+[Container] 2022/03/28 21:54:04 Entering phase INSTALL
+[Container] 2022/03/28 21:54:04 Phase complete: INSTALL State: SUCCEEDED
+[Container] 2022/03/28 21:54:04 Phase context status code:  Message: 
+[Container] 2022/03/28 21:54:04 Entering phase PRE_BUILD
+[Container] 2022/03/28 21:54:04 Running command echo Logging in to Amazon ECR...
+Logging in to Amazon ECR...
+
+[Container] 2022/03/28 21:54:04 Running command aws --version
+aws-cli/1.22.73 Python/3.9.5 Linux/4.14.246-187.474.amzn2.x86_64 exec-env/AWS_ECS_EC2 botocore/1.24.18
+
+[Container] 2022/03/28 21:54:09 Running command $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+WARNING! Using --password via the CLI is insecure. Use --password-stdin.
+WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
+
+[Container] 2022/03/28 21:54:10 Running command REPOSITORY_URI=428599696019.dkr.ecr.us-east-1.amazonaws.com/test-cft
+
+[Container] 2022/03/28 21:54:10 Running command COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+
+[Container] 2022/03/28 21:54:10 Running command IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
+
+[Container] 2022/03/28 21:54:10 Phase complete: PRE_BUILD State: SUCCEEDED
+[Container] 2022/03/28 21:54:10 Phase context status code:  Message: 
+[Container] 2022/03/28 21:54:10 Entering phase BUILD
+[Container] 2022/03/28 21:54:10 Running command echo Build started on `date`
+Build started on Mon Mar 28 21:54:10 UTC 2022
+
+[Container] 2022/03/28 21:54:10 Running command echo Building the Docker image...
+Building the Docker image...
+
+[Container] 2022/03/28 21:54:10 Running command docker build -t $REPOSITORY_URI:latest .
+Sending build context to Docker daemon  43.01kB
+
+Step 1/8 : FROM node:12.18.1
+12.18.1: Pulling from library/node
+81fc19181915: Pulling fs layer
+ee49ee6a23d1: Pulling fs layer
+828510924538: Pulling fs layer
+a8f58c4fcca0: Pulling fs layer
+33699d7df21e: Pulling fs layer
+923705ffa8f8: Pulling fs layer
+5fa4fa08e10b: Pulling fs layer
+7f3e893e40e2: Pulling fs layer
+1b42cd4fbcb0: Pulling fs layer
+a8f58c4fcca0: Waiting
+33699d7df21e: Waiting
+923705ffa8f8: Waiting
+5fa4fa08e10b: Waiting
+7f3e893e40e2: Waiting
+1b42cd4fbcb0: Waiting
+828510924538: Verifying Checksum
+828510924538: Download complete
+ee49ee6a23d1: Verifying Checksum
+ee49ee6a23d1: Download complete
+81fc19181915: Verifying Checksum
+81fc19181915: Download complete
+923705ffa8f8: Verifying Checksum
+923705ffa8f8: Download complete
+a8f58c4fcca0: Verifying Checksum
+a8f58c4fcca0: Download complete
+5fa4fa08e10b: Verifying Checksum
+5fa4fa08e10b: Download complete
+7f3e893e40e2: Verifying Checksum
+7f3e893e40e2: Download complete
+1b42cd4fbcb0: Verifying Checksum
+1b42cd4fbcb0: Download complete
+33699d7df21e: Verifying Checksum
+33699d7df21e: Download complete
+81fc19181915: Pull complete
+ee49ee6a23d1: Pull complete
+828510924538: Pull complete
+a8f58c4fcca0: Pull complete
+33699d7df21e: Pull complete
+923705ffa8f8: Pull complete
+5fa4fa08e10b: Pull complete
+7f3e893e40e2: Pull complete
+1b42cd4fbcb0: Pull complete
+Digest: sha256:2b85f4981f92ee034b51a3c8bb22dbb451d650d5c12b6439a169f8adc750e4b6
+Status: Downloaded newer image for node:12.18.1
+ ---> f5be1883c8e0
+Step 2/8 : WORKDIR /app
+ ---> Running in ed5a64687a7e
+Removing intermediate container ed5a64687a7e
+ ---> 8e2be65eddbe
+Step 3/8 : COPY package.json package.json
+ ---> cc4d487f3289
+Step 4/8 : COPY package-lock.json package-lock.json
+ ---> 670ddea6699d
+Step 5/8 : RUN npm install
+ ---> Running in 902c041c081e
+added 50 packages from 37 contributors and audited 50 packages in 0.893s
+
+2 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+Removing intermediate container 902c041c081e
+ ---> cd841259ff96
+Step 6/8 : EXPOSE 3000
+ ---> Running in e6752708d0ef
+Removing intermediate container e6752708d0ef
+ ---> 1e2474d52fd6
+Step 7/8 : COPY . .
+ ---> db3cbf93c81d
+Step 8/8 : CMD [ "node", "./server.js" ]
+ ---> Running in 4522e2aa8895
+Removing intermediate container 4522e2aa8895
+ ---> 1cd98cd20a87
+Successfully built 1cd98cd20a87
+Successfully tagged 428599696019.dkr.ecr.us-east-1.amazonaws.com/test-cft:latest
+
+[Container] 2022/03/28 21:54:35 Running command docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+
+[Container] 2022/03/28 21:54:35 Phase complete: BUILD State: SUCCEEDED
+[Container] 2022/03/28 21:54:35 Phase context status code:  Message: 
+[Container] 2022/03/28 21:54:35 Entering phase POST_BUILD
+[Container] 2022/03/28 21:54:35 Running command echo Build completed on `date`
+Build completed on Mon Mar 28 21:54:35 UTC 2022
+
+[Container] 2022/03/28 21:54:35 Running command echo Pushing the Docker images...
+Pushing the Docker images...
+
+[Container] 2022/03/28 21:54:35 Running command docker push $REPOSITORY_URI:latest
+The push refers to repository [428599696019.dkr.ecr.us-east-1.amazonaws.com/test-cft]
+ae29ff95af91: Preparing
+c3050cb4a50a: Preparing
+c2de2e043c6d: Preparing
+a1e533db2410: Preparing
+73a8919961a9: Preparing
+dc48ece44f3c: Preparing
+798326960eac: Preparing
+dacaab4534e4: Preparing
+bc17cd405095: Preparing
+ee854067fbbd: Preparing
+740ffea5d5c3: Preparing
+eac9ead92b24: Preparing
+23bca356262f: Preparing
+8354d5896557: Preparing
+dc48ece44f3c: Waiting
+798326960eac: Waiting
+dacaab4534e4: Waiting
+bc17cd405095: Waiting
+ee854067fbbd: Waiting
+740ffea5d5c3: Waiting
+eac9ead92b24: Waiting
+23bca356262f: Waiting
+8354d5896557: Waiting
+a1e533db2410: Pushed
+c2de2e043c6d: Pushed
+73a8919961a9: Pushed
+ae29ff95af91: Pushed
+c3050cb4a50a: Pushed
+dc48ece44f3c: Pushed
+bc17cd405095: Pushed
+798326960eac: Pushed
+eac9ead92b24: Pushed
+23bca356262f: Pushed
+dacaab4534e4: Pushed
+8354d5896557: Pushed
+740ffea5d5c3: Pushed
+ee854067fbbd: Pushed
+latest: digest: sha256:f95b4b8b07a0f50b0589894a9d7a9e862a161885f21b175f04dd6cfd6bcba076 size: 3257
+
+[Container] 2022/03/28 21:55:07 Running command docker push $REPOSITORY_URI:$IMAGE_TAG
+The push refers to repository [428599696019.dkr.ecr.us-east-1.amazonaws.com/test-cft]
+ae29ff95af91: Preparing
+c3050cb4a50a: Preparing
+c2de2e043c6d: Preparing
+a1e533db2410: Preparing
+73a8919961a9: Preparing
+dc48ece44f3c: Preparing
+798326960eac: Preparing
+dacaab4534e4: Preparing
+bc17cd405095: Preparing
+ee854067fbbd: Preparing
+740ffea5d5c3: Preparing
+eac9ead92b24: Preparing
+23bca356262f: Preparing
+8354d5896557: Preparing
+dc48ece44f3c: Waiting
+798326960eac: Waiting
+ee854067fbbd: Waiting
+dacaab4534e4: Waiting
+bc17cd405095: Waiting
+740ffea5d5c3: Waiting
+eac9ead92b24: Waiting
+8354d5896557: Waiting
+23bca356262f: Waiting
+c2de2e043c6d: Layer already exists
+73a8919961a9: Layer already exists
+ae29ff95af91: Layer already exists
+a1e533db2410: Layer already exists
+c3050cb4a50a: Layer already exists
+dc48ece44f3c: Layer already exists
+798326960eac: Layer already exists
+bc17cd405095: Layer already exists
+dacaab4534e4: Layer already exists
+740ffea5d5c3: Layer already exists
+ee854067fbbd: Layer already exists
+eac9ead92b24: Layer already exists
+23bca356262f: Layer already exists
+8354d5896557: Layer already exists
+build-2bde36f2-6724-4f01-9972-4d7adfebe267: digest: sha256:f95b4b8b07a0f50b0589894a9d7a9e862a161885f21b175f04dd6cfd6bcba076 size: 3257
+
+[Container] 2022/03/28 21:55:08 Running command echo Writing image definitions file...
+Writing image definitions file...
+
+[Container] 2022/03/28 21:55:08 Running command printf '[{"name":"order-service","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+
+[Container] 2022/03/28 21:55:08 Running command cat imagedefinitions.json
+[{"name":"order-service","imageUri":"428599696019.dkr.ecr.us-east-1.amazonaws.com/test-cft:build-2bde36f2-6724-4f01-9972-4d7adfebe267"}]
+[Container] 2022/03/28 21:55:08 Phase complete: POST_BUILD State: SUCCEEDED
+[Container] 2022/03/28 21:55:08 Phase context status code:  Message: 
+[Container] 2022/03/28 21:55:08 Phase complete: UPLOAD_ARTIFACTS State: SUCCEEDED
+[Container] 2022/03/28 21:55:08 Phase context status code:  Message: 
+
