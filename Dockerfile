@@ -11,4 +11,4 @@ EXPOSE 3000
 
 COPY . .
  
-CMD [ "node", "./devops-candidate-task/server.js" ]
+CMD [ "node", "./server.js" ]
