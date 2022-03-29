@@ -5,8 +5,3 @@ Resources:
      Type: AWS::ECR::Repository
      Properties:
        RepositoryName: "test-cft"
-Outputs:
-   AWSTrainingTestArn:
-     Value: !GetAtt AWSTrainingTestRepo.Arn
-     Export:
-       Name: AWSTrainingTestArn
