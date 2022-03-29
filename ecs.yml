@@ -1,166 +1,210 @@
-AWSTrainingECSCluster:
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
 
+
+  VpcId:
+    Type: String
+    Description: VPC id
+    Default: vpc-c8d942b2
+
+Resources:
+  Cluster:
     Type: AWS::ECS::Cluster
-
     Properties:
+      ClusterName: hubsynccluster
 
-      ClusterName: AWSTrainingECSCluster
-
-
-
-AWSTrainingECSService:
-
-    Type: AWS::ECS::Service
-
-    DependsOn: WebListenerRule
-
-    Properties:
-
-      Cluster: !Ref AWSTrainingECSCluster
-
-      DesiredCount: 1
-
-      LaunchType: EC2
-
-      LoadBalancers:
-
-        - ContainerName: AWSTraining
-
-          ContainerPort: 8080
-
-          TargetGroupArn: !Ref WebTargetGroup
-
-      NetworkConfiguration:
-
-        AwsvpcConfiguration:
-
-          AssignPublicIp: DISABLED
-
-          Subnets:
-
-          - Fn::ImportValue: !Sub ${EnvironmentName}:SubnetAZ1Private
-
-          - Fn::ImportValue: !Sub ${EnvironmentName}:SubnetAZ2Private
-
-          SecurityGroups:
-
-            - !Ref ContainerSecurityGroup
-
-      ServiceName: !Sub aws-training-${EnvironmentName}
-
-      TaskDefinition: !Ref AWSTrainingTaskDefinition
-
-      DeploymentConfiguration:
-
-        MaximumPercent: 200
-
-        MinimumHealthyPercent: 50
-
-
-CloudWatchLogsGroup:
-
+  LogGroup:
     Type: AWS::Logs::LogGroup
-
     Properties:
+      LogGroupName: hubsync-log-group
 
-      LogGroupName: /aws/ecs/training
-
-      RetentionInDays: 7
-
-AWSTrainingTaskDefinition:
-
-    Type: AWS::ECS::TaskDefinition
-
-    Properties:
-
-      Cpu: "256"
-
-      Memory: "512"
-
-      ExecutionRoleArn: !Ref ECSTaskRole
-
-      Family: aws-training
-
-      NetworkMode: awsvpc
-
-      RequiresCompatibilities:
-
-        - EC2
-        
-      ContainerDefinitions:
-
-        -
-
-          Name: AWSTraining
-
-          # Replace image link with the docker image path along with the tag
-
-          Image: 428599696019.dkr.ecr.us-east-1.amazonaws.com/test:latest
-
-          PortMappings:
-
-            - ContainerPort: 3000
-
-          LogConfiguration:
-
-            LogDriver: awslogs
-
-            Options:
-
-              awslogs-group: !Ref CloudWatchLogsGroup
-
-              awslogs-region: !Ref AWS::Region
-
-              awslogs-stream-prefix: aws-training
-
-
-
-ECSTaskRole:
-
+  ExecutionRole:
     Type: AWS::IAM::Role
-
     Properties:
-
+      RoleName: hubsync-role
       AssumeRolePolicyDocument:
-
         Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
 
-        - Effect: Allow
+  ContainerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: ContainerSecurityGroup
+      GroupDescription: Security group for container
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
 
-          Principal:
-
-            Service: [ecs-tasks.amazonaws.com]
-
-          Action: ['sts:AssumeRole']
-
+  DemoInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties: 
+      InstanceProfileName: demo-ec2-instance-profile
       Path: /
+      Roles: 
+       - !Ref ExecutionRole
 
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3a.micro
+      SecurityGroups: [!Ref 'ContainerSecurityGroup']
+      ImageId: ami-00131b70724817da9
+      IamInstanceProfile: !Ref DemoInstanceProfile
+      SubnetId: ['subnet-c7612be9']
+
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: ecstaskhubsynccft
+      Cpu: 1024
+      Memory: 512
+      NetworkMode: bridge
+      ExecutionRoleArn: !Ref ExecutionRole
+      ContainerDefinitions:
+        - Name: ecstaskcontainerhubsync
+          Image: 428599696019.dkr.ecr.us-east-1.amazonaws.com/test-cft:build-2bde36f2-6724-4f01-9972-4d7adfebe267
+          PortMappings:
+            - ContainerPort: 3000
+      RequiresCompatibilities:
+        - EC2
+
+  Service:
+    Type: AWS::ECS::Service
+    DependsOn: LoadBalancer
+    Properties:
+      ServiceName: hubsync-service-cft
+      Cluster: !Ref Cluster
+      TaskDefinition: !Ref TaskDefinition
+      DesiredCount: 2
+      LaunchType: EC2
+      Role: !Ref ExecutionRoleService
+
+
+  ECSAutoScalingGroup:
+    DependsOn: Cluster
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier: ['subnet-c7612be9']
+      LaunchConfigurationName: !Ref ECSLaunchConfiguration
+      MinSize: 1
+      MaxSize: 5
+      DesiredCapacity: 2
+
+  ECSLaunchConfiguration:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: ami-00131b70724817da9
+      InstanceType: t3a.micro
+      SecurityGroups: [!Ref 'ContainerSecurityGroup']
+      IamInstanceProfile: !Ref DemoInstanceProfile
+      UserData:
+        "Fn::Base64": !Sub |
+          #!/bin/bash
+          echo ECS_CLUSTER=hubsynccluster >> /etc/ecs/ecs.config;echo ECS_BACKEND_HOST= >> /etc/ecs/ecs.config;
+
+  ECSServiceAutoScalingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: hubsync-role-autoscalling
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Action:
+            - "sts:AssumeRole"
+          Effect: Allow
+          Principal:
+            Service:
+              - application-autoscaling.amazonaws.com
+      Path: /
       Policies:
-
-        - PolicyName: AWSTrainingAmazonECSTaskExecutionRolePolicy
-
+        - PolicyName: ecs-service-autoscaling
           PolicyDocument:
-
             Statement:
-
-            - Effect: Allow
-
+              Effect: Allow
               Action:
+                - application-autoscaling:*
+                - cloudwatch:DescribeAlarms
+                - cloudwatch:PutMetricAlarm
+                - ecs:DescribeServices
+                - ecs:UpdateService
+              Resource: "*"
 
-                # ECS Tasks to download images from ECR
 
-                - 'ecr:GetAuthorizationToken'
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: Hubsync-ALB
+      Subnets: ['subnet-c7612be9','subnet-79312e33']
+      SecurityGroups:
+        - !Ref ContainerSecurityGroup
 
-                - 'ecr:BatchCheckLayerAvailability'
 
-                - 'ecr:GetDownloadUrlForLayer'
+  LoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: HTTP
 
-                - 'ecr:BatchGetImage'
+  DefaultTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: Hunsynctgp
+      VpcId: vpc-c8d942b2
+      Port: 3000
+      Protocol: HTTP
+      TargetType: instance
 
-                # ECS tasks to upload logs to CloudWatch
+  ExecutionRoleService:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: hubsync-role-service
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole
 
-                - 'logs:CreateLogStream'
+  TargetTrackingScalingPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: hubsync-tracking-scaling-policy
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref ScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 75.0
+        ScaleInCooldown: 60
+        ScaleOutCooldown: 60
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ECSServiceAverageCPUUtilization
 
-                - 'logs:PutLogEvents'
 
-              Resource: '*'
+  ScalableTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      MaxCapacity: 4
+      MinCapacity: 1
+      RoleARN: 
+        Fn::Sub: 'arn:aws:iam::428599696019:role/ecsAutoscaleRole'
+      ServiceNamespace: ecs
+      ScalableDimension: ecs:service:DesiredCount
+      ResourceId: service/hubsynccluster/hubsync-service-cft
+
+
+
+      
